@@ -1,18 +1,50 @@
-sudo: false
 language: node_js
-node_js:
-  - 10 # use nodejs v10 LTS
-cache: npm
-branches:
-  only:
-    - master # build master branch only
+
+node_js: stable
+
+cache:
+    apt: true
+    directories:
+        - node_modules
+
+notifications:
+    email:
+        recipients:
+            - 295812596@qq.com
+        on_success: change
+        on_failure: always
+
+# turn off the clone of submodules for change the SSH to HTTPS in .gitmodules to avoid the error
+git:
+  submodules: false
+        
+before_install:
+    # Use sed to replace the SSH URL with the public URL if .gitmodules exists
+    - test -e ".gitmodules" && sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
+    # update the submodule in repo by manual
+    - git submodule update --init --recursive
+    - git submodule foreach --recursive git pull origin master
+    - export TZ='Asia/Shanghai'
+    - npm install hexo-cli -g
+    - chmod +x ./publish-to-gh-pages.sh
+
+install:
+    - npm install
+
 script:
-  - hexo generate # generate static files
-deploy:
-  provider: pages
-  skip-cleanup: true
-  github-token: $GH_TOKEN
-  keep-history: true
-  on:
-    branch: master
-  local-dir: public
+    - hexo clean
+    - hexo g
+
+after_script:
+    - ./publish-to-gh-pages.sh
+
+branches:
+    only:
+        - master
+
+env:
+    global:
+        # Github Pages
+        - GH_REF: github.com/heyumo/heyumo.github.io.git
+        # Coding Pages
+        - CD_REF: git.coding.net/heyumo/heyumo.git
