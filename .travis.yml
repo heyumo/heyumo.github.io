@@ -46,5 +46,3 @@ env:
     global:
         # Github Pages
         - GH_REF: github.com/heyumo/heyumo.github.io.git
-        # Coding Pages
-        - CD_REF: git.coding.net/heyumo/heyumo.git
